@@ -1,4 +1,5 @@
 using PoolRezWebApi;
+using PoolRezWebApi.Executors;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,7 +12,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddHttpClient();
 
+builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<ILoginExecutor, LoginExecutor>();
+builder.Services.AddSingleton<IReservationExecutor, ReservationExecutor>();
 
 var app = builder.Build();
 

@@ -1,17 +1,19 @@
 ﻿using Newtonsoft.Json;
 using PoolRezWebApi.Models;
 
-namespace PoolRezWebApi
+namespace PoolRezWebApi.Executors
 {
     public class LoginExecutor : ILoginExecutor
     {
         private const string LOGIN_URI = "https://www.ourclublogin.com/api/CustomerAuth/CustomerLogin";
 
         private readonly HttpClient _client;
+        private readonly IUserService _tokenService;
 
-        public LoginExecutor(IHttpClientFactory clientFactory)
+        public LoginExecutor(IHttpClientFactory clientFactory, IUserService tokenService)
         {
             _client = clientFactory.CreateClient();
+            _tokenService = tokenService;
         }
 
         public async Task<TokenData?> Login(LoginInformation loginInformation, CancellationToken cancellationToken)
@@ -45,6 +47,8 @@ namespace PoolRezWebApi
             {
                 return null;
             }
+
+            _tokenService.SetToken(loginResponse.data);
 
             return loginResponse.data;
         }
