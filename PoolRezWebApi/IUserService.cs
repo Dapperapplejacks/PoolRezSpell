@@ -4,13 +4,14 @@ namespace PoolRezWebApi
 {
     public interface IUserService
     {
+
+        void SetUser(UserInfo userInfo);
+
+        UserInfo? GetUser();
+
         TokenData? GetToken();
 
-        void SetToken(TokenData token);
-
         int? GetCustomerId();
-
-        void SetCustomerId(int customerId);
 
     }
 }

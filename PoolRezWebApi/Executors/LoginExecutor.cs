@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using PoolRezWebApi.Helpers;
 using PoolRezWebApi.Models;
 
 namespace PoolRezWebApi.Executors
@@ -8,12 +9,12 @@ namespace PoolRezWebApi.Executors
         private const string LOGIN_URI = "https://www.ourclublogin.com/api/CustomerAuth/CustomerLogin";
 
         private readonly HttpClient _client;
-        private readonly IUserService _tokenService;
+        private readonly IUserService _userService;
 
-        public LoginExecutor(IHttpClientFactory clientFactory, IUserService tokenService)
+        public LoginExecutor(IHttpClientFactory clientFactory, IUserService userService)
         {
             _client = clientFactory.CreateClient();
-            _tokenService = tokenService;
+            _userService = userService;
         }
 
         public async Task<TokenData?> Login(LoginInformation loginInformation, CancellationToken cancellationToken)
@@ -23,12 +24,7 @@ namespace PoolRezWebApi.Executors
                 return null;
             }
 
-            JsonContent requestContent = JsonContent.Create(loginInformation);
-            requestContent.Headers.Add("x-companyid", "510670");
-            requestContent.Headers.Add("x-customerid", "0");
-            requestContent.Headers.Add("Origin", "https://www.ourclublogin.com");
-            requestContent.Headers.Add("DNT", "1");
-            requestContent.Headers.Add("Cookie", "coid=510670");
+            var requestContent = JsonContentCreator.Create(loginInformation);
 
             var response = await _client.PostAsync(LOGIN_URI, requestContent, cancellationToken);
             if (response == null || !response.IsSuccessStatusCode)
@@ -48,7 +44,16 @@ namespace PoolRezWebApi.Executors
                 return null;
             }
 
-            _tokenService.SetToken(loginResponse.data);
+            UserInfo userInfo = new UserInfo()
+            {
+                CustomerId = loginResponse.CustomerId,
+                CustomerPermissions = loginResponse.CustomerPermissions,
+                HomeClub = loginResponse.HomeClub,
+                Token = loginResponse.data
+            };
+
+            _userService.SetUser(userInfo);
+            //_userService.SetToken(loginResponse.data);
 
             return loginResponse.data;
         }

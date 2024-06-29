@@ -1,8 +1,12 @@
-﻿namespace PoolRezWebApi.Executors
+﻿
+using Microsoft.AspNetCore.Mvc;
+using PoolRezWebApi.Models;
+
+namespace PoolRezWebApi.Executors
 {
     public interface IReservationExecutor
     {
-        void GetAllReservations();
+        Task<ActionResult<List<AvailableSlot>>> GetAllReservations(CancellationToken cancellationToken);
 
         void GetReservationInTimeFrame();
 

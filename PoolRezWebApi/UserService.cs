@@ -4,8 +4,13 @@ namespace PoolRezWebApi
 {
     public class UserService : IUserService
     {
-        private TokenData? _token;
+        private UserInfo? _userInfo;
         private int? _customerId;
+
+        public UserInfo? GetUser()
+        {
+            return _userInfo;
+        }
 
         public int? GetCustomerId()
         {
@@ -14,23 +19,20 @@ namespace PoolRezWebApi
 
         public TokenData? GetToken()
         {
-            return _token;
+            return _userInfo?.Token;
         }
 
-        public void SetCustomerId(int customerId)
+        public void SetUser(UserInfo userInfo)
         {
-            if (customerId != _customerId)
+            if (_userInfo != userInfo)
             {
-                _customerId = customerId;
+                _userInfo = userInfo;
             }
         }
 
-        public void SetToken(TokenData token)
+        public UserInfo? GetUserInfo()
         {
-            if (token != _token)
-            {
-                _token = token;
-            }
+            return _userInfo;
         }
     }
 }

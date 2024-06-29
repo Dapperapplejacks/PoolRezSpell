@@ -20,6 +20,7 @@ namespace PoolRezWebApi.Controllers
         public HttpClient Client => _client;
 
         [HttpPost]
+        [Route("login")]
         public async Task<ActionResult<TokenData>> Login(LoginInformation loginInfo, CancellationToken cancellationToken)
         {
             if (loginInfo.Username == null || loginInfo.Password == null)
