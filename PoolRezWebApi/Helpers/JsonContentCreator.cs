@@ -26,6 +26,25 @@ namespace PoolRezWebApi.Helpers
             return requestContent;
         }
 
+        public static JsonContent Create(object payload, UserInfo userInfo)
+        {
+            var jsonSettings = new JsonSerializerSettings();
+            jsonSettings.DateFormatString = "yyyy-MM-ddTHH:mm:ss.fffZ";
+            JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
+            jsonOptions.Converters.Add(new CustomDateTimeConverter());
+
+            var json = JsonConvert.SerializeObject(payload, jsonSettings);
+
+            JsonContent requestContent = JsonContent.Create(payload, options: jsonOptions);
+            requestContent.Headers.Add("x-companyid", Constants.COMPANY_ID.ToString());
+            requestContent.Headers.Add("x-customerid", userInfo.CustomerId.ToString());
+            requestContent.Headers.Add("Origin", Constants.ORIGIN_URL);
+            requestContent.Headers.Add("DNT", "1");
+            requestContent.Headers.Add("Cookie", $"coid={Constants.COMPANY_ID}");
+
+            return requestContent;
+        }
+
         public static JsonContent Create(object payload, TokenData token)
         {
             JsonContent requestContent = Create(payload);

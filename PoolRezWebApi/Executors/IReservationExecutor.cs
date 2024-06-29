@@ -6,7 +6,7 @@ namespace PoolRezWebApi.Executors
 {
     public interface IReservationExecutor
     {
-        Task<ActionResult<List<AvailableSlot>>> GetAllReservations(CancellationToken cancellationToken);
+        Task<ActionResult<GetBookAvailabilityResponse>> GetAllReservations(CancellationToken cancellationToken);
 
         void GetReservationInTimeFrame();
 

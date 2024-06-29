@@ -21,9 +21,9 @@ namespace PoolRezWebApi.Controllers
 
         [HttpGet]
         [Route("GetAllAvailable")]
-        public async Task<ActionResult<List<AvailableSlot>>> GetAllAvailableSlots(CancellationToken cancellationToken)
+        public async Task<ActionResult<GetBookAvailabilityResponse>> GetAllAvailableSlots(CancellationToken cancellationToken)
         {
-            ActionResult<List<AvailableSlot>> slots = await _reservationExecutor.GetAllReservations(cancellationToken);
+            ActionResult<GetBookAvailabilityResponse> slots = await _reservationExecutor.GetAllReservations(cancellationToken);
 
             return slots;
         }

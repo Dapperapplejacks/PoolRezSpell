@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using PoolRezWebApi.Attributes;
 using PoolRezWebApi.Helpers;
 using PoolRezWebApi.Models;
@@ -16,7 +17,7 @@ namespace PoolRezWebApi.Executors
         private readonly HttpClient _client;
         private readonly IUserService _userService;
 
-        private readonly UserInfo? _userInfo;
+        private UserInfo? _userInfo;
 
         public ReservationExecutor(IHttpClientFactory clientFactory, IUserService userService)
         {
@@ -32,8 +33,9 @@ namespace PoolRezWebApi.Executors
             _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _userInfo.Token.Token);
         }
 
-        public async Task<ActionResult<List<AvailableSlot>>> GetAllReservations(CancellationToken cancellationToken)
+        public async Task<ActionResult<GetBookAvailabilityResponse>> GetAllReservations(CancellationToken cancellationToken)
         {
+            _userInfo = _userService.GetUser();
             if (_userInfo is null)
             {
                 return new UnauthorizedResult();
@@ -42,19 +44,38 @@ namespace PoolRezWebApi.Executors
             // GetAvailability, do from now till 2 weeks from now
             GetAvailabilityPayload payload = new GetAvailabilityPayload()
             {
+                ClubId = Constants.CLUB_ID,
+                PrimaryCustomerId = _userInfo.CustomerId,
+                ItemId = Constants.BOOKABLE_ITEM_30_MIN_ID,
+                JsonSelectedBook = "null",
                 StartDate = DateTime.Now,
                 EndDate = DateTime.Now.AddDays(14),
-                PrimaryCustomerId = _userInfo.CustomerId
+                
             };
 
-            var requestContent = JsonContentCreator.Create(payload);
-            var jsonSettings = new JsonSerializerSettings();
-            jsonSettings.DateFormatString = "yyyy-MM-ddTHH:mm:ss.fffZ";
-            string jsonContent = JsonConvert.SerializeObject(payload, jsonSettings);
-            JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
-            jsonOptions.Converters.Add(new CustomDateTimeConverter());
+            var startDate = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+            var endDate = DateTime.Now.AddDays(14).ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
 
-            HttpResponseMessage response = await _client.PostAsJsonAsync(GET_BOOK_AVAILABILITY_URI, requestContent, options: jsonOptions, cancellationToken);
+            //var requestContent = JsonContentCreator.Create(payload);
+            //var jsonSettings = new JsonSerializerSettings();
+            //jsonSettings.DateFormatString = "yyyy-MM-ddTHH:mm:ss.fffZ";
+            //string jsonContent = JsonConvert.SerializeObject(payload, jsonSettings);
+            //JsonSerializerOptions jsonOptions = new JsonSerializerOptions();
+            //jsonOptions.Converters.Add(new CustomDateTimeConverter());
+            //var requestContent = JsonContentCreator.Create(jsonContent, _userInfo);
+            //HttpResponseMessage response = await _client.PostAsync(GET_BOOK_AVAILABILITY_URI, requestContent, cancellationToken);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, GET_BOOK_AVAILABILITY_URI);
+            request.Headers.Add("DNT", "1");
+            request.Headers.Add("Cookie", $"coid={Constants.COMPANY_ID}");
+            request.Headers.Add("Origin", "https://www.ourclublogin.com");
+            request.Headers.Add("x-companyid", Constants.COMPANY_ID.ToString());
+            request.Headers.Add("x-customerid", _userInfo.CustomerId.ToString());
+            var content = new StringContent($"{{\"ClubId\":{Constants.CLUB_ID},\"PrimaryCustomerId\":{_userInfo.CustomerId},\"ItemId\":{Constants.BOOKABLE_ITEM_30_MIN_ID},\"JsonSelectedBook\":\"null\",\"StartDate\":\"{startDate}\",\"EndDate\":\"{endDate}\"}}", null, "application/json");
+            request.Content = content;
+            var response = await _client.SendAsync(request, cancellationToken);
+
+            
             if (response == null || !response.IsSuccessStatusCode)
             {
                 return new StatusCodeResult(response is null ? 500 : (int)response.StatusCode);
@@ -71,7 +92,7 @@ namespace PoolRezWebApi.Executors
                 return new StatusCodeResult(500);
             }
 
-            return availabilityResponse.Availability;
+            return availabilityResponse;
         }
 
         public void GetReservationInTimeFrame()
