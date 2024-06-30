@@ -1,6 +1,6 @@
 ﻿using PoolRezWebApi.Models;
 
-namespace PoolRezWebApi
+namespace PoolRezWebApi.Services
 {
     public interface IUserService
     {

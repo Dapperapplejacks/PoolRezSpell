@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using PoolRezWebApi.Attributes;
 using PoolRezWebApi.Helpers;
 using PoolRezWebApi.Models;
+using PoolRezWebApi.Services;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Serialization;
